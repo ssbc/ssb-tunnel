@@ -70,20 +70,24 @@ tape('carol tunnels through bob to get to alice', function (t) {
       ['shs', alice.id.substring(1, alice.id.indexOf('.'))].join(':')
     ].join('~')
 
-//    console.log(carol.gossip.peers())
     t.notEqual(carol.gossip.peers().map(function (e) { return e.key }).indexOf(bob.id), -1)
 
     console.log("CAROL CONNECT", tunnel_addr)
-    carol.connect(tunnel_addr, function (err, rpc) {
+    carol.connect(tunnel_addr, function (err, rpc_alice) {
       if(err) throw err
-      t.equal(rpc.id, alice.id)
-      rpc.close(true)
-      alice.close(true)
-      bob.close(true)
-      carol.close(true)
-      t.ok(tunneled)
-      t.end()
+      var ts = Date.now()
+      rpc_alice.tunnel.ping(function (err, _ts) {
+        if(err) throw err
+        t.ok(tunneled)
+        t.equal(rpc_alice.id, alice.id)
+        alice.close()
+        bob.close()
+        carol.close()
+        t.end()
+      })
     })
   }, 100)
 })
+
+
 
