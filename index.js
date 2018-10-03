@@ -65,12 +65,46 @@ exports.init = function (sbot, config) {
     name: 'tunnel',
     create: function (config, instance) {
       instance = instance || 0
+      var portal
       return {
         name: 'tunnel',
         scope: function () { return config.scope || 'public' },
         server: function (onConnect) {
           //just remember the reference, call it
           //when the tunnel api is called.
+
+          portal = config.portal
+          setImmediate(function again () {
+            //todo: put this inside the server creator?
+            //it would at least allow the tests to be fully ordered
+            var timer
+            function reconnect () {
+              if(sbot.closed) return
+              clearTimeout(timer)
+              timer = setTimeout(again, 1000*Math.random())
+            }
+
+            sbot.gossip.connect(portal, function (err, rpc) {
+              if(err) {
+                console.error('failed to connect to portal:',portal)
+                //console.error(err.stack)
+                return reconnect()
+              }
+              rpc.tunnel.announce(null, function (err) {
+                if(err) {
+                  console.error(err.stack)
+                  return reconnect()
+                }
+                //emit an event here?
+                console.log("ANNOUNCED:", sbot.id, 'at', portal)
+              })
+              rpc.on('closed', function () {
+                console.log("RECONNECT")
+                return reconnect()
+              })
+            })
+          })
+
           handlers[instance] = onConnect
         },
         client: function (addr, cb) {
@@ -93,40 +127,6 @@ exports.init = function (sbot, config) {
             return ['tunnel', portal, sbot.id, instance].join(':')
         }
       }
-    }
-  })
-
-  setImmediate(function again () {
-    //todo: put this inside the server creator?
-    //it would at least allow the tests to be fully ordered
-    var timer
-    function reconnect () {
-      if(sbot.closed) return
-      clearTimeout(timer)
-      timer = setTimeout(again, 1000*Math.random())
-    }
-
-    if(config.tunnel && config.tunnel.portal) {
-      var addr = sbot.gossip.get(config.tunnel.portal).address
-      sbot.gossip.connect(config.tunnel.portal, function (err, rpc) {
-        if(err) {
-          console.error('failed to connect to portal:',config.tunnel.portal)
-          //console.error(err.stack)
-          return reconnect()
-        }
-        rpc.tunnel.announce(null, function (err) {
-          if(err) {
-            console.error(err.stack)
-            return reconnect()
-          }
-          //emit an event here?
-          console.log("ANNOUNCED:", sbot.id, 'at', config.tunnel.portal)
-        })
-        rpc.on('closed', function () {
-          console.log("RECONNECT")
-          return reconnect()
-        })
-      })
     }
   })
 
@@ -154,6 +154,12 @@ exports.init = function (sbot, config) {
     }
   }
 }
+
+
+
+
+
+
 
 
 
