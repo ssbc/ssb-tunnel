@@ -36,29 +36,67 @@ but the `A<=B` tunnel is the opposite direction as the `A->B` container.
 
 tunnel addresses are multiserver style:
 
-`tunnel:@7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519:0:net:localhost:1234!~shs:1b9KP8znF7A4i8wnSevBSK2ZabI/Re4bYF/Vh3hXasQ=~shs:7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=`
+`tunnel:<portal_id>:<target_id>:<port>?` for example:
+`tunnel:@7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519:@1b9KP8znF7A4i8wnSevBSK2ZabI/Re4bYF/Vh3hXasQ=~shs:7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519`
+(port is optional)
 
-for the protocol portion of the multiserver address,
-`tunnel:target:port:portal_address`
+It is assumed that a peer who wishes to be a client to
+`target` already has a means to connect to `portal`.
+The address of the portal is left out, so that the client
+can use anything, and also, to better preserve the privacy
+of the portal.
+
+For the protocol portion of the multiserver address,
+`tunnel:portal:target:port`
 this will include the `shs` portion for the portal.
 `port` is just an integer that tells the server which
 `ssb-tunnel` instance the client wants to connect to.
+(port is used so that there can be multiple instances
+running with different transform protocols)
+
 `target` is a ssb feed id, which represents the peer.
 This tells the portal that C wants a connection to A.
-`portal` tells A how to connect to B. Notice that since
-the portal address has a shs portion, the protocol separator
-`~` is escaped as `!~`.
-The portal address can be any valid multiserver address.
+`portal` tells A how to connect to B. 
 
-thoughts: maybe the address format should be
-`tunnel:portal:target:channel~shs:key...`
+## privacy proposal
 
-To connect, you must already know an address for `portal`.
-That means, this address doesn't change when `portal` changes
-it's protocols. how `target` or the client connects to portal
-is beside the point.
+Instead of using `tunnel:<portal>:<target>`
+use `tunnel:<hmac(portal, target)>` then, you have to already
+know the portal to make sense of the target. knowing the address
+of the target does not automatically leak the address of the portal.
+
+## how it works
+
+for 3 peers, A, B, and C. A being the client-side server, which
+will receive the tunnel connection, B being the portal, and C
+being the client who connects to A via B.
+
+First A connects to B normally, then calls `B.tunnel.announce()`
+This informs B that A would like to receive connections tunneled
+though B. (B puts A into a table of endpoints it can provide tunnels
+to)
+
+Then C connects to B, and then calls `B.tunnel.connect({id: A.id})`
+B then checks if it can provide a connection to A, which it can,
+and calls `endpoints[A.id].tunnel.connect({id: A})` returning this stream
+to B (B is now connected to A via C).
+
+B then initiates a [`secret-handshake`](https://github.com/auditdrivencrypto/secret-handshake) through the tunnel, hiding subsequent content from B.
+
 
 ## License
 
 MIT
+
+
+
+
+
+
+
+
+
+
+
+
 
