@@ -23,14 +23,14 @@ exports.version = '1.0.0'
 
 exports.manifest = {
   announce: 'sync',
-  connect: 'duplex'
+  connect: 'duplex',
+  ping: 'sync'
 }
 exports.permissions = {
-  anonymous: {allow: ['connect', 'announce']}
+  anonymous: {allow: ['connect', 'announce', 'ping']}
 }
 
 exports.init = function (sbot, config) {
-  console.log("CONFIG", config)
   var endpoints = {}
   var portal = config.tunnel && config.tunnel.portal
 
@@ -75,9 +75,16 @@ exports.init = function (sbot, config) {
         },
         client: function (addr, cb) {
           var opts = parse(addr)
+          console.log("TUNNEL.client", opts)
           sbot.gossip.connect(opts.portal, function (err, rpc) {
+            console.log("TUNNEL.client", err || rpc.id)
             if(err) cb(err)
-            else cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}))
+            else {
+              console.log('attempt tunnel connection to:', opts)
+              cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}, function (err) {
+                //how to handle this error?
+              }))
+            }
           })
         },
         parse: parse,
@@ -89,19 +96,35 @@ exports.init = function (sbot, config) {
     }
   })
 
-  setImmediate(function () {
+  setImmediate(function again () {
     //todo: put this inside the server creator?
     //it would at least allow the tests to be fully ordered
+    var timer
+    function reconnect () {
+      if(sbot.closed) return
+      clearTimeout(timer)
+      timer = setTimeout(again, 1000*Math.random())
+    }
+
     if(config.tunnel && config.tunnel.portal) {
       var addr = sbot.gossip.get(config.tunnel.portal).address
       sbot.gossip.connect(config.tunnel.portal, function (err, rpc) {
         if(err) {
-          return console.error('failed to connect to portal:',config.tunnel.portal)
-          console.error(err.stack)
+          console.error('failed to connect to portal:',config.tunnel.portal)
+          //console.error(err.stack)
+          return reconnect()
         }
-        rpc.tunnel.announce(null, function () {
+        rpc.tunnel.announce(null, function (err) {
+          if(err) {
+            console.error(err.stack)
+            return reconnect()
+          }
           //emit an event here?
           console.log("ANNOUNCED:", sbot.id, 'at', config.tunnel.portal)
+        })
+        rpc.on('closed', function () {
+          console.log("RECONNECT")
+          return reconnect()
         })
       })
     }
@@ -115,9 +138,7 @@ exports.init = function (sbot, config) {
       //if we are being asked to forward connections...
       //TODO: config to disable forwarding
       if(endpoints[opts.target]) {
-        return endpoints[opts.target].tunnel.connect(opts, function (err) {
-          if(cb) cb(err)
-        })
+        return endpoints[opts.target].tunnel.connect(opts)
       }
       //if this connection is for us
       else if(opts.target === sbot.id && handlers[opts.port]) {
@@ -126,8 +147,13 @@ exports.init = function (sbot, config) {
         return streams[1]
       }
       else
-        return DuplexError('could not connect to:'+opts.id)
+        return DuplexError('could not connect to:'+opts.target)
+    },
+    ping: function () {
+      return Date.now()
     }
   }
 }
+
+
 
