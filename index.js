@@ -65,7 +65,6 @@ exports.init = function (sbot, config) {
     name: 'tunnel',
     create: function (config, instance) {
       instance = instance || 0
-      console.log("CREATE MS PLUGIN, TUNNEL")
       return {
         name: 'tunnel',
         scope: function () { return config.scope || 'public' },
@@ -73,11 +72,9 @@ exports.init = function (sbot, config) {
           //just remember the reference, call it
           //when the tunnel api is called.
           handlers[instance] = onConnect
-          console.log("CREATED TUNNEL SERVER:", sbot.id)
         },
         client: function (addr, cb) {
           var opts = parse(addr)
-          console.log("TUNNEL OPTS", opts)
           sbot.gossip.connect(opts.portal, function (err, rpc) {
             if(err) cb(err)
             else cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}))
@@ -93,9 +90,9 @@ exports.init = function (sbot, config) {
   })
 
   setImmediate(function () {
+    //todo: put this inside the server creator?
+    //it would at least allow the tests to be fully ordered
     if(config.tunnel && config.tunnel.portal) {
-      console.log("CONNECT TO PORTAL", config.tunnel)
-      console.log('PORTAL', sbot.gossip.get(config.tunnel.portal))
       var addr = sbot.gossip.get(config.tunnel.portal).address
       sbot.gossip.connect(config.tunnel.portal, function (err, rpc) {
         if(err) {
@@ -103,6 +100,7 @@ exports.init = function (sbot, config) {
           console.error(err.stack)
         }
         rpc.tunnel.announce(null, function () {
+          //emit an event here?
           console.log("ANNOUNCED:", sbot.id, 'at', config.tunnel.portal)
         })
       })
@@ -111,11 +109,9 @@ exports.init = function (sbot, config) {
 
   return {
     announce: function (opts) {
-      console.log('announce', this.id, opts)
       endpoints[this.id] = sbot.peers[this.id][0]
     },
     connect: function (opts, cb) {
-      console.log("TUNNEL CONNECT", opts, {from: this.id, to: opts})
       //if we are being asked to forward connections...
       //TODO: config to disable forwarding
       if(endpoints[opts.target]) {
@@ -134,14 +130,4 @@ exports.init = function (sbot, config) {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
 
