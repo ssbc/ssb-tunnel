@@ -58,6 +58,26 @@ running with different transform protocols)
 This tells the portal that C wants a connection to A.
 `portal` tells A how to connect to B. 
 
+## config
+
+assuming this plugin is already running on your pub server...
+
+```
+incoming: {
+  tunnel: [{scope: 'public', portal: <pub_id>, transform:'shs'}]
+},
+outgoing: {
+  tunnel: [{transform:'shs'}]
+},
+//if pub is not already in your gossip table, add this:
+seeds: [
+  <pub.getAddress()>
+]
+```
+then, another peer (will need to have the outgoing config, and have an address for `pub`)
+can do: `sbot.gossip.connect('tunnel:<pub_id>:<your_id>~shs:your_key', function (err, rpc) {...})`
+and they'll have connection through `pub` to you!
+
 ## privacy proposal
 
 Instead of using `tunnel:<portal>:<target>`
@@ -87,16 +107,5 @@ B then initiates a [`secret-handshake`](https://github.com/auditdrivencrypto/sec
 ## License
 
 MIT
-
-
-
-
-
-
-
-
-
-
-
 
 
