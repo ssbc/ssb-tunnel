@@ -20,7 +20,7 @@ var caps = {
   shs: hash('cap')
 }
 
-tape('carol tunnels through bob to get to alice', function (t) {
+tape('connect two peers - just to test connections config', function (t) {
 
   var carol = Scuttlebot({
     port: 1236, temp: true, keys: c_keys, caps:caps,
@@ -31,34 +31,19 @@ tape('carol tunnels through bob to get to alice', function (t) {
       incoming: {
         tunnel: [{scope: 'public', transform: 'shs' }]
       },
-//      outgoing: {
-//        net: [{scope: 'public'}]
-//      }
     }
   })
 
   var bob = Scuttlebot({
     port: 1237, temp: true, keys: b_keys, caps:caps,
-//    connections: {
-//      incoming: {
-//        tunnel: [{scope: 'public', transform: 'shs' }]
-//      },
-//      outgoing: {
-//        net: [{scope: 'public'}]
-//      }
-//    }
   })
 
 
   carol.connect(bob.getAddress(), function (err, rpc) {
     if(err) throw err
-    console.log('connected', rpc.id)
-    rpc.close()
     carol.close()
     bob.close()
     t.end()
-
   })
-  
-
 })
+
