@@ -13,7 +13,7 @@
     "ssb-ref": "^2.11.1"
   },
   "devDependencies": {
-    "scuttlebot": "^12.2.2",
+    "scuttlebot": "^12.2.3",
     "ssb-keys": "^7.0.14",
     "tape": "^4.9.0"
   },
