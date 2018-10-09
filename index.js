@@ -34,6 +34,13 @@ exports.init = function (sbot, config) {
   var endpoints = {}
   var portal = config.tunnel && config.tunnel.portal
 
+  var logging = config.tunnel && config.tunnel.logging
+
+  function log(msg) {
+    if(logging)
+      console.error(msg)
+  }
+
   function parse (string) {
     var opts
     if(isObject(string))
@@ -83,24 +90,24 @@ exports.init = function (sbot, config) {
               clearTimeout(timer)
               timer = setTimeout(again, 1000*Math.random())
             }
-
+            log('tunnel:listen - connecting to portal:'+portal)
             sbot.gossip.connect(portal, function (err, rpc) {
               if(err) {
-                console.error('failed to connect to portal:',portal)
-                //console.error(err.stack)
+                log('tunnel:listen - failed to connect to portal:'+portal+' '+err.message)
                 return reconnect()
               }
               rpc.tunnel.announce(null, function (err) {
                 if(err) {
-                  console.error(err.stack)
+                  log('tunnel:listen - error during announcement at '+portal+' '+err.message)
+  
                   return reconnect()
                 }
                 //emit an event here?
-                console.log("ANNOUNCED:", sbot.id, 'at', portal)
+                log('tunnel:listen - SUCCESS establishing portal:'+portal)
                 sbot.emit('tunnel:listening', portal)
               })
               rpc.on('closed', function () {
-                console.log("RECONNECT")
+                log('tunnel:listen - portal closed:'+portal)
                 sbot.emit('tunnel:closed')
                 return reconnect()
               })
@@ -111,13 +118,16 @@ exports.init = function (sbot, config) {
         },
         client: function (addr, cb) {
           var opts = parse(addr)
-          console.log("TUNNEL.client", opts)
+          log('tunnel:connect - connect to portal:'+opts.portal)
           sbot.gossip.connect(opts.portal, function (err, rpc) {
-            console.log("TUNNEL.client", err || rpc.id)
-            if(err) cb(err)
+            if(err) {
+              log('tunnel:connect - failed connect to portal:'+opts.portal+' '+err.message)
+              cb(err)
+            }
             else {
-              console.log('attempt tunnel connection to:', opts)
+              log('tunnel:connect - portal connected, tunnel to target:'+opts.target)
               cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}, function (err) {
+              log('tunnel:connect - failed to connect to target:'+opts.target+' '+err.message)
                 //how to handle this error?
               }))
             }
@@ -134,9 +144,12 @@ exports.init = function (sbot, config) {
 
   return {
     announce: function (opts) {
+      log('tunnel:portal - received endpoint announcement from:'+this.id)
       endpoints[this.id] = sbot.peers[this.id][0]
     },
     connect: function (opts, cb) {
+      if(!opts) return DuplexError('opts *must* be provided')
+      log('tunnel:portal - received tunnel request for target:'+opts.target)
       //if we are being asked to forward connections...
       //TODO: config to disable forwarding
       if(endpoints[opts.target]) {
@@ -156,4 +169,6 @@ exports.init = function (sbot, config) {
     }
   }
 }
+
+
 
