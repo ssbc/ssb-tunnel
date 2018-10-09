@@ -56,7 +56,7 @@ tape('carol tunnels through bob to get to alice', function (t) {
   })
   console.log(">>>")
 
-  setTimeout(function () {
+  alice.once('tunnel:listening', function () {
     var tunneled = false
     alice.on('rpc:connect', function (rpc) {
       tunneled = true
@@ -86,8 +86,10 @@ tape('carol tunnels through bob to get to alice', function (t) {
         t.end()
       })
     })
-  }, 100)
+  })
 })
+
+
 
 
 
