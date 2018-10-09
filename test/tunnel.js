@@ -42,7 +42,6 @@ tape('carol tunnels through bob to get to alice', function (t) {
     }
   })
 
-  console.log("ALICE??")
   var alice = Scuttlebot({
     tunnel: { logging: true },
     port: 1234, temp: true, keys: a_keys, caps:caps,
@@ -57,7 +56,6 @@ tape('carol tunnels through bob to get to alice', function (t) {
       }
     }
   })
-  console.log(">>>")
 
   alice.once('tunnel:listening', function () {
     var tunneled = false
@@ -75,7 +73,6 @@ tape('carol tunnels through bob to get to alice', function (t) {
 
     t.notEqual(carol.gossip.peers().map(function (e) { return e.key }).indexOf(bob.id), -1)
 
-    console.log("CAROL CONNECT", tunnel_addr)
     carol.connect(tunnel_addr, function (err, rpc_alice) {
       if(err) throw err
       var ts = Date.now()
@@ -91,8 +88,4 @@ tape('carol tunnels through bob to get to alice', function (t) {
     })
   })
 })
-
-
-
-
 
