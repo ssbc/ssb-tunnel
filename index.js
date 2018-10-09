@@ -97,9 +97,11 @@ exports.init = function (sbot, config) {
                 }
                 //emit an event here?
                 console.log("ANNOUNCED:", sbot.id, 'at', portal)
+                sbot.emit('tunnel:listening', portal)
               })
               rpc.on('closed', function () {
                 console.log("RECONNECT")
+                sbot.emit('tunnel:closed')
                 return reconnect()
               })
             })
@@ -154,12 +156,4 @@ exports.init = function (sbot, config) {
     }
   }
 }
-
-
-
-
-
-
-
-
 
