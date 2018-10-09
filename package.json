@@ -18,7 +18,8 @@
     "tape": "^4.9.0"
   },
   "scripts": {
-    "test": "set -e; for t in test/*.js; do node $t; done"
+    "test": "set -e; for t in test/*.js; do node $t; done",
+    "build": "browserify examples/browser/index.js > examples/browser/bundle.js"
   },
   "author": "Dominic Tarr <dominic.tarr@gmail.com> (http://dominictarr.com)",
   "license": "MIT"
