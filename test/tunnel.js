@@ -24,12 +24,14 @@ tape('carol tunnels through bob to get to alice', function (t) {
 
   var bob = Scuttlebot({
     port: 1235, temp: true, keys: b_keys,
-    caps: caps
+    caps: caps,
+    tunnel: { logging: true }
   })
 
   var carol = Scuttlebot({
     port: 1236, temp: true, keys: c_keys, caps:caps,
     seeds: [bob.getAddress()],
+    tunnel: { logging: true },
     connections: {
       incoming: {
       },
@@ -42,6 +44,7 @@ tape('carol tunnels through bob to get to alice', function (t) {
 
   console.log("ALICE??")
   var alice = Scuttlebot({
+    tunnel: { logging: true },
     port: 1234, temp: true, keys: a_keys, caps:caps,
     seeds: [bob.getAddress()],
     tunnel: {portal: bob.id},
