@@ -135,8 +135,12 @@ exports.init = function (sbot, config) {
         },
         parse: parse,
         stringify: function () {
-          if(portal)
-            return ['tunnel', portal, sbot.id, instance].join(':')
+          if(portal) {
+            var parts = ['tunnel', portal, sbot.id]
+            if(instance)
+              parts.push(instance)
+            return parts.join(':')
+          }
         }
       }
     }
@@ -169,6 +173,7 @@ exports.init = function (sbot, config) {
     }
   }
 }
+
 
 
 

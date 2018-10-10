@@ -85,6 +85,8 @@ use `tunnel:<hmac(portal, target)>` then, you have to already
 know the portal to make sense of the target. knowing the address
 of the target does not automatically leak the address of the portal.
 
+
+
 ## how it works
 
 for 3 peers, A, B, and C. A being the client-side server, which
