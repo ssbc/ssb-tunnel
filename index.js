@@ -82,7 +82,7 @@ exports.init = function (sbot, config) {
           if(!portal) throw new Error('ssb-tunnel is configured, but a portal is missing')
           //just remember the reference, call it
           //when the tunnel api is called.
-
+          var _rpc
           setImmediate(function again () {
             //todo: put this inside the server creator?
             //it would at least allow the tests to be fully ordered
@@ -101,6 +101,7 @@ exports.init = function (sbot, config) {
                 log('tunnel:listen - failed to connect to portal:'+portal+' '+err.message)
                 return reconnect()
               }
+              _rpc = rpc
               rpc.tunnel.announce(null, function (err) {
                 if(err) {
                   log('tunnel:listen - error during announcement at '+portal+' '+err.message)
@@ -111,6 +112,7 @@ exports.init = function (sbot, config) {
                 sbot.emit('tunnel:listening', portal)
               })
               rpc.on('closed', function (err) {
+                _rpc = null
                 log('tunnel:listen - portal closed:'+portal, err)
                 sbot.emit('tunnel:closed')
                 return reconnect()
@@ -121,6 +123,10 @@ exports.init = function (sbot, config) {
           handlers[instance] = function (stream) {
             stream.address = 'tunnel:'+portal
             onConnect(stream)
+          }
+          //close server
+          return function () {
+            if(_rpc) _rpc.close()
           }
         },
         client: function (addr, cb) {
