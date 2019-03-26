@@ -69,21 +69,17 @@ incoming: {
 outgoing: {
   tunnel: [{transform:'shs'}]
 },
-//if pub is not already in your gossip table, add this:
-seeds: [
-  <pub.getAddress()>
-]
 ```
+
 then, another peer (will need to have the outgoing config, and have an address for `pub`)
 can do: `sbot.gossip.connect('tunnel:<pub_id>:<your_id>~shs:your_key', function (err, rpc) {...})`
 and they'll have connection through `pub` to you!
 
-## privacy proposal
+## privacy ideas
 
-Instead of using `tunnel:<portal>:<target>`
-use `tunnel:<hmac(portal, target)>` then, you have to already
-know the portal to make sense of the target. knowing the address
-of the target does not automatically leak the address of the portal.
+Instead of revealing the id of the portal, just use the `hmac(portal_id, your_id)`
+so peers that do not know of the portal do not learn about it from your address.
+That way only friends can connect to you.
 
 ## how it works
 
@@ -107,5 +103,9 @@ B then initiates a [`secret-handshake`](https://github.com/auditdrivencrypto/sec
 ## License
 
 MIT
+
+
+
+
 
 
