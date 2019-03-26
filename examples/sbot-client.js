@@ -44,10 +44,15 @@
 var portal_addr = process.argv[2]
 var target_addr = process.argv[3]
 
+if(!portal_addr || !target_addr) {
+  console.error('usage:')
+  console.error('  node sbot-client.js <portal_addr> <target_addr>')
+}
+
 var crypto = require('crypto')
-var Scuttlebot = require('scuttlebot')
-.use(require('scuttlebot/plugins/gossip'))
-.use(require('./'))
+var Scuttlebot = require('ssb-server')
+.use(require('ssb-gossip'))
+.use(require('../'))
 
 var ssbKeys = require('ssb-keys')
 
@@ -93,10 +98,5 @@ var timer
     })
   })
 })()
-
-
-
-
-
 
 
