@@ -1,7 +1,7 @@
 {
   "name": "ssb-tunnel",
   "description": "tunnel multiserver connections through ssb pubs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://github.com/dominictarr/ssb-tunnel",
   "repository": {
     "type": "git",
