@@ -47,8 +47,7 @@ tape('carol tunnels through bob to get to alice', function (t) {
     connections: {
       incoming: {},
       outgoing: {
-        tunnel: [{transform: 'shs' }],
-        net: [{transform: 'shs'}],
+        net: [{transform: 'shs'}]
       }
     }
   })

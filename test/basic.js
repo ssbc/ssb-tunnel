@@ -27,10 +27,7 @@ tape('connect two peers - just to test connections config', function (t) {
     connections: {
       outgoing: {
         net: [{scope: 'local', transform: 'shs'}],
-      },
-      incoming: {
-        tunnel: [{scope: 'local', transform: 'shs' }]
-      },
+      }
     }
   })
 
@@ -47,4 +44,5 @@ tape('connect two peers - just to test connections config', function (t) {
     t.end()
   })
 })
+
 
