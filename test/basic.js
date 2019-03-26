@@ -1,10 +1,10 @@
 var crypto = require('crypto')
-var Scuttlebot = require('scuttlebot')
-.use(require('scuttlebot/plugins/gossip'))
-var tape = require('tape')
 
-Scuttlebot
-  .use(require('../'))
+var createSsbServer = require('ssb-server')
+  .use(require('ssb-gossip'))
+  .use(require('..'))
+
+var tape = require('tape')
 
 var ssbKeys = require('ssb-keys')
 
@@ -22,28 +22,27 @@ var caps = {
 
 tape('connect two peers - just to test connections config', function (t) {
 
-  var carol = Scuttlebot({
+  var carol = createSsbServer({
     port: 1236, temp: true, keys: c_keys, caps:caps,
     connections: {
       outgoing: {
-        net: [{scope: 'public', transform: 'shs'}],
-      },
-      incoming: {
-        tunnel: [{scope: 'public', transform: 'shs' }]
-      },
+        net: [{scope: 'local', transform: 'shs'}],
+      }
     }
   })
 
-  var bob = Scuttlebot({
+  var bob = createSsbServer({
     port: 1237, temp: true, keys: b_keys, caps:caps,
   })
 
+  t.ok(bob.getAddress('local'))
 
-  carol.connect(bob.getAddress(), function (err, rpc) {
+  carol.connect(bob.getAddress('local'), function (err, rpc) {
     if(err) throw err
     carol.close()
     bob.close()
     t.end()
   })
 })
+
 
