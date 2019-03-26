@@ -30,11 +30,13 @@
   in `CONNECTED <target_id>`
   and then something like:
 
-  { whole: 824, //roundtrip time
+  {
+    whole: 824, //roundtrip time
     first: 447, //time of packet from us to them
     second: 377, //time of packet from them to us
     us: 1538607498423, //our send time
-    them: 1538607498870 } //their send time
+    them: 1538607498870 //their send time
+  }
 
   I have tested this bouncing a connection via my server
   back to my laptop!
@@ -47,7 +49,7 @@ var target_addr = process.argv[3]
 var crypto = require('crypto')
 var Scuttlebot = require('scuttlebot')
 .use(require('scuttlebot/plugins/gossip'))
-.use(require('./'))
+.use(require('../'))
 
 var ssbKeys = require('ssb-keys')
 
