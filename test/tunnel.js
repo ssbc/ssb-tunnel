@@ -1,6 +1,6 @@
 var crypto = require('crypto')
-var Scuttlebot = require('scuttlebot')
-.use(require('scuttlebot/plugins/gossip'))
+var Scuttlebot = require('ssb-server')
+.use(require('ssb-gossip'))
 .use(require('../'))
 var tape = require('tape')
 
@@ -46,7 +46,7 @@ tape('carol tunnels through bob to get to alice', function (t) {
     tunnel: { logging: true },
     port: 1234, temp: true, keys: a_keys, caps:caps,
     seeds: [bob.getAddress()],
-    tunnel: {portal: bob.id},
+    tunnel: {},
     connections: {
       incoming: {
         tunnel: [{scope: 'public', transform: 'shs', portal: bob.id}]
@@ -67,7 +67,7 @@ tape('carol tunnels through bob to get to alice', function (t) {
     //it really is tunneling.
     var tunnel_addr = [
       //tunnel:<portal>:<target>
-      ['tunnel', bob.id, alice.id].join(':'),
+      ['tunnel', bob.id, alice.id, 0].join(':'),
       ['shs', alice.id.substring(1, alice.id.indexOf('.'))].join(':')
     ].join('~')
 
