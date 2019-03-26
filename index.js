@@ -26,13 +26,13 @@ exports.manifest = {
   connect: 'duplex',
   ping: 'sync'
 }
+
 exports.permissions = {
   anonymous: {allow: ['connect', 'announce', 'ping']}
 }
 
 exports.init = function (sbot, config) {
   var endpoints = {}
-  var portal = config.tunnel && config.tunnel.portal
 
   var logging = config.tunnel && config.tunnel.logging
 
@@ -70,17 +70,19 @@ exports.init = function (sbot, config) {
 
   sbot.multiserver.transport({
     name: 'tunnel',
-    create: function (config, instance) {
-      instance = instance || 0
-      var portal
+    create: function (config) {
+      //at this point we've only created a transport,
+      //it may be used for outgoing connections only.
+      var portal = config.portal, instance = config.instance || 0
       return {
         name: 'tunnel',
-        scope: function () { return config.scope || 'public' },
+        scope: function () { return config.scope },
         server: function (onConnect) {
+          //now we are definitely creating a server. check that portal is configured.
+          if(!portal) throw new Error('ssb-tunnel is configured, but a portal is missing')
           //just remember the reference, call it
           //when the tunnel api is called.
 
-          portal = config.portal
           setImmediate(function again () {
             //todo: put this inside the server creator?
             //it would at least allow the tests to be fully ordered
@@ -90,6 +92,9 @@ exports.init = function (sbot, config) {
               clearTimeout(timer)
               timer = setTimeout(again, 1000*Math.random())
             }
+            //this plugin might be enabled, but a portal might not be set.
+            if(!portal) return reconnect()
+
             log('tunnel:listen - connecting to portal:'+portal)
             sbot.gossip.connect(portal, function (err, rpc) {
               if(err) {
@@ -99,22 +104,24 @@ exports.init = function (sbot, config) {
               rpc.tunnel.announce(null, function (err) {
                 if(err) {
                   log('tunnel:listen - error during announcement at '+portal+' '+err.message)
-  
                   return reconnect()
                 }
                 //emit an event here?
                 log('tunnel:listen - SUCCESS establishing portal:'+portal)
                 sbot.emit('tunnel:listening', portal)
               })
-              rpc.on('closed', function () {
-                log('tunnel:listen - portal closed:'+portal)
+              rpc.on('closed', function (err) {
+                log('tunnel:listen - portal closed:'+portal, err)
                 sbot.emit('tunnel:closed')
                 return reconnect()
               })
             })
           })
 
-          handlers[instance] = onConnect
+          handlers[instance] = function (stream) {
+            stream.address = 'tunnel:'+portal
+            onConnect(stream)
+          }
         },
         client: function (addr, cb) {
           var opts = parse(addr)
@@ -127,7 +134,8 @@ exports.init = function (sbot, config) {
             else {
               log('tunnel:connect - portal connected, tunnel to target:'+opts.target)
               cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}, function (err) {
-              log('tunnel:connect - failed to connect to target:'+opts.target+' '+err.message)
+                if(err)
+                  log('tunnel:connect - failed to connect to target:'+opts.target+' '+err.message)
                 //how to handle this error?
               }))
             }
@@ -149,10 +157,11 @@ exports.init = function (sbot, config) {
     },
     connect: function (opts, cb) {
       if(!opts) return DuplexError('opts *must* be provided')
-      log('tunnel:portal - received tunnel request for target:'+opts.target)
+
       //if we are being asked to forward connections...
       //TODO: config to disable forwarding
       if(endpoints[opts.target]) {
+        log('tunnel:portal - received tunnel request for target:'+opts.target+', from:'+this.id)
         return endpoints[opts.target].tunnel.connect(opts)
       }
       //if this connection is for us
@@ -169,6 +178,9 @@ exports.init = function (sbot, config) {
     }
   }
 }
+
+
+
 
 
 
