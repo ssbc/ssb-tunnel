@@ -1,4 +1,3 @@
-var Client = require('ssb-client')
 var isFeed = require('ssb-ref').isFeed
 var DuplexPair = require('pull-pair/duplex')
 
@@ -184,9 +183,4 @@ exports.init = function (sbot, config) {
     }
   }
 }
-
-
-
-
-
 
