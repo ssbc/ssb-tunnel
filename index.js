@@ -1,7 +1,7 @@
 var isFeed = require('ssb-ref').isFeed
 var DuplexPair = require('pull-pair/duplex')
 
-function DuplexError (message) {
+function ErrorDuplex (message) {
   var err = new Error(message)
   return {
     source: function (abort, cb) {
@@ -92,19 +92,24 @@ exports.init = function (sbot, config) {
               timer = setTimeout(again, 1000*Math.random())
             }
             //this plugin might be enabled, but a portal might not be set.
-            if(!portal) return reconnect()
+            if(!portal) {
+              reconnect()
+              return
+            }
 
             log('tunnel:listen - connecting to portal:'+portal)
             sbot.gossip.connect(portal, function (err, rpc) {
               if(err) {
                 log('tunnel:listen - failed to connect to portal:'+portal+' '+err.message)
-                return reconnect()
+                reconnect()
+                return
               }
               _rpc = rpc
               rpc.tunnel.announce(null, function (err) {
                 if(err) {
                   log('tunnel:listen - error during announcement at '+portal+' '+err.message)
-                  return reconnect()
+                  reconnect()
+                  return
                 }
                 //emit an event here?
                 log('tunnel:listen - SUCCESS establishing portal:'+portal)
@@ -114,7 +119,7 @@ exports.init = function (sbot, config) {
                 _rpc = null
                 log('tunnel:listen - portal closed:'+portal, err)
                 sbot.emit('tunnel:closed')
-                return reconnect()
+                reconnect()
               })
             })
           })
@@ -138,11 +143,7 @@ exports.init = function (sbot, config) {
             }
             else {
               log('tunnel:connect - portal connected, tunnel to target:'+opts.target)
-              cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}, function (err) {
-                if(err)
-                  log('tunnel:connect - failed to connect to target:'+opts.target+' '+err.message)
-                //how to handle this error?
-              }))
+              cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}))
             }
           })
         },
@@ -160,8 +161,8 @@ exports.init = function (sbot, config) {
       log('tunnel:portal - received endpoint announcement from:'+this.id)
       endpoints[this.id] = sbot.peers[this.id][0]
     },
-    connect: function (opts, cb) {
-      if(!opts) return DuplexError('opts *must* be provided')
+    connect: function (opts) {
+      if(!opts) return ErrorDuplex('opts *must* be provided')
 
       //if we are being asked to forward connections...
       //TODO: config to disable forwarding
@@ -176,7 +177,7 @@ exports.init = function (sbot, config) {
         return streams[1]
       }
       else
-        return DuplexError('could not connect to:'+opts.target)
+        return ErrorDuplex('could not connect to:'+opts.target)
     },
     ping: function () {
       return Date.now()
