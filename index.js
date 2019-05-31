@@ -125,7 +125,7 @@ exports.init = function (sbot, config) {
           })
 
           handlers[instance] = function (stream) {
-            stream.address = 'tunnel:'+portal
+            stream.address = 'tunnel:'+portal+':'+sbot.id
             onConnect(stream)
           }
           //close server
