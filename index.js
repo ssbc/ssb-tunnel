@@ -124,8 +124,8 @@ exports.init = function (sbot, config) {
             })
           })
 
-          handlers[instance] = function (stream) {
-            stream.address = 'tunnel:'+portal
+          handlers[instance] = function (stream, id) {
+            stream.address = 'tunnel:'+portal+':'+id
             onConnect(stream)
           }
           //close server
@@ -173,7 +173,7 @@ exports.init = function (sbot, config) {
       //if this connection is for us
       else if(opts.target === sbot.id && handlers[opts.port]) {
         var streams = DuplexPair()
-        handlers[opts.port](streams[0])
+        handlers[opts.port](streams[0], this.id)
         return streams[1]
       }
       else
