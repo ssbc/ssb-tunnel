@@ -17,6 +17,7 @@
     "ssb-gossip": "^1.0.6",
     "ssb-keys": "^7.1.5",
     "ssb-server": "^14.1.9",
+    "ssb-query": "~2.4.3",
     "tape": "^4.9.0"
   },
   "scripts": {
