@@ -6,8 +6,6 @@ var Scuttlebot = require('ssb-server')
 .use(require('ssb-device-address'))
 var tape = require('tape')
 
-Scuttlebot
-
 var ssbKeys = require('ssb-keys')
 
 function hash (s) {
