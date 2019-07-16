@@ -17,6 +17,8 @@ function isObject (o) {
   return 'object' === typeof o
 }
 
+function noop () { }
+
 exports.name = 'tunnel'
 exports.version = '1.0.0'
 
@@ -143,7 +145,7 @@ exports.init = function (sbot, config) {
             }
             else {
               log('tunnel:connect - portal connected, tunnel to target:'+opts.target)
-              cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}))
+              cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}, noop))
             }
           })
         },
@@ -168,7 +170,7 @@ exports.init = function (sbot, config) {
       //TODO: config to disable forwarding
       if(endpoints[opts.target]) {
         log('tunnel:portal - received tunnel request for target:'+opts.target+', from:'+this.id)
-        return endpoints[opts.target].tunnel.connect(opts)
+        return endpoints[opts.target].tunnel.connect(opts, noop)
       }
       //if this connection is for us
       else if(opts.target === sbot.id && handlers[opts.port]) {
@@ -184,4 +186,3 @@ exports.init = function (sbot, config) {
     }
   }
 }
-
