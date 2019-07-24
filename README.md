@@ -37,7 +37,7 @@ but the `A<=B` tunnel is the opposite direction as the `A->B` container.
 tunnel addresses are multiserver style:
 
 `tunnel:<portal_id>:<target_id>:<port>?` for example:
-`tunnel:@7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519:@1b9KP8znF7A4i8wnSevBSK2ZabI/Re4bYF/Vh3hXasQ=~shs:7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519`
+`tunnel:@7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519:@1b9KP8znF7A4i8wnSevBSK2ZabI/Re4bYF/Vh3hXasQ=.ed25519~shs:7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=`
 (port is optional)
 
 It is assumed that a peer who wishes to be a client to
@@ -99,13 +99,6 @@ to B (B is now connected to A via C).
 
 B then initiates a [`secret-handshake`](https://github.com/auditdrivencrypto/secret-handshake) through the tunnel, hiding subsequent content from B.
 
-
 ## License
 
 MIT
-
-
-
-
-
-
