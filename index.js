@@ -53,7 +53,7 @@ exports.init = function (sbot, config) {
         name: parts[0],
         portal: parts[1],
         target: parts[2],
-        port: +parts[3] || 0,
+        instance: +parts[3] || 0,
       }
     }
 
@@ -61,7 +61,7 @@ exports.init = function (sbot, config) {
       opts.name === 'tunnel' &&
       isFeed(opts.portal) &&
       isFeed(opts.target) &&
-      Number.isInteger(opts.port)
+      Number.isInteger(opts.instance)
     )) return
 
     return opts
@@ -145,7 +145,7 @@ exports.init = function (sbot, config) {
             }
             else {
               log('tunnel:connect - portal connected, tunnel to target:'+opts.target)
-              cb(null, rpc.tunnel.connect({target: opts.target, port: opts.port}, noop))
+              cb(null, rpc.tunnel.connect({target: opts.target, instance: opts.instance}, noop))
             }
           })
         },
@@ -173,9 +173,9 @@ exports.init = function (sbot, config) {
         return endpoints[opts.target].tunnel.connect(opts, noop)
       }
       //if this connection is for us
-      else if(opts.target === sbot.id && handlers[opts.port]) {
+      else if(opts.target === sbot.id && handlers[opts.instance]) {
         var streams = DuplexPair()
-        handlers[opts.port](streams[0], this.id)
+        handlers[opts.instance](streams[0], this.id)
         return streams[1]
       }
       else

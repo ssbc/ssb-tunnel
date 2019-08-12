@@ -36,9 +36,9 @@ but the `A<=B` tunnel is the opposite direction as the `A->B` container.
 
 tunnel addresses are multiserver style:
 
-`tunnel:<portal_id>:<target_id>:<port>?` for example:
+`tunnel:<portal_id>:<target_id>:<instance>?` for example:
 `tunnel:@7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=.ed25519:@1b9KP8znF7A4i8wnSevBSK2ZabI/Re4bYF/Vh3hXasQ=.ed25519~shs:7MG1hyfz8SsxlIgansud4LKM57IHIw2Okw/hvOdeJWw=`
-(port is optional)
+(instance is optional)
 
 It is assumed that a peer who wishes to be a client to
 `target` already has a means to connect to `portal`.
@@ -47,12 +47,10 @@ can use anything, and also, to better preserve the privacy
 of the portal.
 
 For the protocol portion of the multiserver address,
-`tunnel:portal:target:port`
+`tunnel:portal:target:instance`
 this will include the `shs` portion for the portal.
-`port` is just an integer that tells the server which
-`ssb-tunnel` instance the client wants to connect to.
-(port is used so that there can be multiple instances
-running with different transform protocols)
+`instance` is just an integer that tells the server which
+`ssb-tunnel` instance the client wants to connect to if there are multiple.
 
 `target` is a ssb feed id, which represents the peer.
 This tells the portal that C wants a connection to A.
@@ -60,20 +58,28 @@ This tells the portal that C wants a connection to A.
 
 ## config
 
-assuming this plugin is already running on your pub server...
+Assuming this plugin is already installed and enabled on your pub
+server. You need to configure sbot with an incoming section so that it
+can receive tunnel connections:
 
 ```
 incoming: {
   tunnel: [{scope: 'public', portal: <pub_id>, transform:'shs'}]
-},
-outgoing: {
-  tunnel: [{transform:'shs'}]
-},
+}
 ```
 
-then, another peer (will need to have the outgoing config, and have an address for `pub`)
-can do: `sbot.gossip.connect('tunnel:<pub_id>:<your_id>~shs:your_key', function (err, rpc) {...})`
-and they'll have connection through `pub` to you!
+then, another peer will need to have the outgoing config:
+
+```
+outgoing: {
+  tunnel: [{transform:'shs'}]
+}
+```
+
+and have an address for `pub`, can do:
+`sbot.gossip.connect('tunnel:<pub_id>:<your_id>~shs:your_key',
+function (err, rpc) {...})` and they'll have connection through `pub`
+to you!
 
 ## privacy ideas
 
@@ -81,7 +87,7 @@ Instead of revealing the id of the portal, just use the `hmac(portal_id, your_id
 so peers that do not know of the portal do not learn about it from your address.
 That way only friends can connect to you.
 
-## how it works
+## how it works behind the scenes
 
 for 3 peers, A, B, and C. A being the client-side server, which
 will receive the tunnel connection, B being the portal, and C
