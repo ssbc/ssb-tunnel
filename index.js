@@ -20,7 +20,7 @@ function isObject (o) {
 function noop () { }
 
 exports.name = 'tunnel'
-exports.version = '1.0.0'
+exports.version = require('./package.json').version
 
 exports.manifest = {
   announce: 'sync',
