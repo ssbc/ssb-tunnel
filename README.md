@@ -18,7 +18,7 @@ giving us a connect _through_ `B`, `C-(B)->A`.
 ```
 A connects to B, and waits to receive tunnel connections.
 C connects to B, and then requests a tunnel through that
-connection (B-C) to A. B calls A, creating an incomming tunnel,
+connection (B-C) to A. B calls A, creating an incoming tunnel,
 and attaches one end to C's request, C then uses the standard
 handshake to authenticate A.
 
